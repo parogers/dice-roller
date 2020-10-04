@@ -12,52 +12,52 @@ var viewport;
 function setupTouch()
 {
     viewport.addEventListener('touchstart', event => {
-	event.preventDefault();
+        event.preventDefault();
 
-	if (pendingTouch !== null) {
-	    return;
-	}
+        if (pendingTouch !== null) {
+            return;
+        }
 
-	for (let touch of event.changedTouches)
-	{
-	    pendingTouch = {
-		identifier: touch.identifier,
-		x: touch.pageX,
-		y : touch.pageY,
-	    };
-	    mouseDown(pendingTouch.x, pendingTouch.y);
-	    break;
-	}
+        for (let touch of event.changedTouches)
+        {
+            pendingTouch = {
+                identifier: touch.identifier,
+                x: touch.pageX,
+                y : touch.pageY,
+            };
+            mouseDown(pendingTouch.x, pendingTouch.y);
+            break;
+        }
 
     }, false);
 
     viewport.addEventListener('touchend', () => {
-	if (pendingTouch !== null)
-	{
-	    mouseUp(pendingTouch.x, pendingTouch.y);
-	    pendingTouch = null;
-	}
+        if (pendingTouch !== null)
+        {
+            mouseUp(pendingTouch.x, pendingTouch.y);
+            pendingTouch = null;
+        }
     }, false);
 
     viewport.addEventListener('touchcancel', () => {
-	if (pendingTouch !== null)
-	{
-	    mouseUp(pendingTouch.x, pendingTouch.y);
-	    pendingTouch = null;
-	}
+        if (pendingTouch !== null)
+        {
+            mouseUp(pendingTouch.x, pendingTouch.y);
+            pendingTouch = null;
+        }
     }, false);
 
     viewport.addEventListener('touchmove', event => {
-	for (let touch of event.changedTouches)
-	{
-	    if (pendingTouch && touch.identifier === pendingTouch.identifier)
-	    {
-		pendingTouch.x = touch.pageX;
-		pendingTouch.y = touch.pageY;
-		mouseMove(pendingTouch.x, pendingTouch.y);
-		break;
-	    }
-	}
+        for (let touch of event.changedTouches)
+        {
+            if (pendingTouch && touch.identifier === pendingTouch.identifier)
+            {
+                pendingTouch.x = touch.pageX;
+                pendingTouch.y = touch.pageY;
+                mouseMove(pendingTouch.x, pendingTouch.y);
+                break;
+            }
+        }
     }, false);
 }
 
@@ -73,8 +73,8 @@ function mouseMove(eventX, eventY)
     tray.style.transform = 'translateX(' + x + 'px)';
 
     if (lastClientX !== null) {
-	const w = 0.50;
-	velocity = w*velocity + (1-w)*(eventX - lastClientX) / (now - lastTime);
+        const w = 0.50;
+        velocity = w*velocity + (1-w)*(eventX - lastClientX) / (now - lastTime);
     }
 
     lastClientX = eventX;
@@ -94,15 +94,15 @@ function mouseUp(eventX, eventY)
     setTrayX(startTrayX + eventX - startX);
 
     let callback = () => {
-	const delay = 25;
-	velocity *= 0.98;
+        const delay = 25;
+        velocity *= 0.98;
 
-	setTrayX(startTrayX + velocity*(delay/1000.0));
-	tray.style.transform = 'translateX(' + startTrayX + 'px)';
+        setTrayX(startTrayX + velocity*(delay/1000.0));
+        tray.style.transform = 'translateX(' + startTrayX + 'px)';
 
-	if (Math.abs(velocity) > 10) {
-	    setTimeout(callback, delay);
-	}
+        if (Math.abs(velocity) > 10) {
+            setTimeout(callback, delay);
+        }
     };
     callback();
 }
@@ -117,20 +117,20 @@ function loaded()
     rect = viewport.getBoundingClientRect();
 
     setupTouch();
-    
+
     viewport.addEventListener('mousemove', event => {
-	if (event.buttons === 1)
-	{
-	    mouseMove(event.clientX, event.clientY);
-	}
+        if (event.buttons === 1)
+        {
+            mouseMove(event.clientX, event.clientY);
+        }
     });
 
     viewport.addEventListener('mousedown', event => {
-	mouseDown(event.clientX, event.clientY);
+        mouseDown(event.clientX, event.clientY);
     });
 
     viewport.addEventListener('mouseup', event => {
-	mouseUp(event.clientX, event.clientY);
+        mouseUp(event.clientX, event.clientY);
     });
 }
 
@@ -140,11 +140,11 @@ function setTrayX(value)
 
     if (-startTrayX > rect.width)
     {
-	startTrayX += rect.width;
-	tray.style.transform = 'translateX(' + startTrayX + 'px)';
+        startTrayX += rect.width;
+        tray.style.transform = 'translateX(' + startTrayX + 'px)';
 
-	const tile = tray.querySelector('div');
-	tray.removeChild(tile);
-	tray.appendChild(tile);
+        const tile = tray.querySelector('div');
+        tray.removeChild(tile);
+        tray.appendChild(tile);
     }
 }
