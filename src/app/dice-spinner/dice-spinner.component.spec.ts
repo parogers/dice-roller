@@ -15,22 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AppComponent } from './app.component';
-import { DiceSpinnerComponent } from './dice-spinner/dice-spinner.component';
+import { DiceSpinnerComponent } from './dice-spinner.component';
 
-@NgModule({
-    declarations: [
-        AppComponent,
-        DiceSpinnerComponent
-    ],
-    imports: [
-        BrowserModule
-    ],
-    providers: [],
-    bootstrap: [AppComponent]
-})
-export class AppModule
-{ }
+describe('DiceSpinnerComponent', () => {
+    let component: DiceSpinnerComponent;
+    let fixture: ComponentFixture<DiceSpinnerComponent>;
+
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            declarations: [ DiceSpinnerComponent ]
+        })
+        .compileComponents();
+    });
+
+    beforeEach(() => {
+        fixture = TestBed.createComponent(DiceSpinnerComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
+
+    it('should create', () => {
+        expect(component).toBeTruthy();
+    });
+});
