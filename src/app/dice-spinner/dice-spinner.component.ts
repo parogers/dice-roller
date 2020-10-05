@@ -17,20 +17,42 @@
  */
 import { Component, OnInit, ViewChild } from '@angular/core';
 
-function millis()
+function time()
 {
     return (new Date()).getTime()/1000.0;
 }
 
-class SpeedEstimator
+class VelocityEstimator
 {
+    velocity : number = 0;
+    lastTime : number = -1;
+    lastPos : number = 0;
+
+    reset()
+    {
+        this.velocity = 0;
+        this.lastPos = 0;
+        this.lastTime = -1;
+    }
+
+    update(pos : number, tm : number)
+    {
+        if (this.lastTime !== -1)
+        {
+            const w = 0.50;
+            this.velocity = w*this.velocity + (1-w)*(pos - this.lastPos) / (tm - this.lastTime);
+        }
+        this.lastTime = tm;
+        this.lastPos = pos;
+    }
 }
 
 class Spinner
 {
-    startX : number;
+    estimator = new VelocityEstimator();
+    startDragPos : number;
     lastDragPos : number = -1;
-    startTrayPos : number = 0;
+    trayOffset : number = 0;
     // lastTime : number;
     // velocity : number;
 
@@ -42,12 +64,12 @@ class Spinner
     setTrayX(value : number)
     {
         const rect = this.tray.getBoundingClientRect();
-        this.startTrayPos = value;
+        this.trayOffset = value;
 
-        if (-this.startTrayPos > rect.width)
+        if (-this.trayOffset > rect.width)
         {
-            this.startTrayPos += rect.width;
-            this.tray.style.transform = 'translateX(' + this.startTrayPos + 'px)';
+            this.trayOffset += rect.width;
+            this.tray.style.transform = 'translateX(' + this.trayOffset + 'px)';
 
             const tile = this.tray.querySelector('div');
             this.tray.removeChild(tile);
@@ -57,22 +79,23 @@ class Spinner
 
     startDrag(pos)
     {
-        this.startX = pos;
-        // this.lastTime = millis();
+        this.startDragPos = pos;
         this.lastDragPos = -1;
         this.velocity = 0;
+        this.estimator.reset();
     }
 
     stopDrag(pos)
     {
-        this.setTrayX(this.startTrayPos + pos - this.startX);
+        this.setTrayX(this.trayOffset + pos - this.startDragPos);
+        console.log(this.estimator.velocity);
         //
         // let callback = () => {
         //     const delay = 25;
         //     velocity *= 0.98;
         //
-        //     setTrayX(startTrayPos + velocity*(delay/1000.0));
-        //     tray.style.transform = 'translateX(' + startTrayPos + 'px)';
+        //     setTrayX(trayOffset + velocity*(delay/1000.0));
+        //     tray.style.transform = 'translateX(' + trayOffset + 'px)';
         //
         //     if (Math.abs(velocity) > 10) {
         //         setTimeout(callback, delay);
@@ -83,17 +106,10 @@ class Spinner
 
     drag(pos : number)
     {
-        const now = millis();
-        const x = this.startTrayPos + pos - this.startX;
+        const x = this.trayOffset + pos - this.startDragPos;
         this.tray.style.transform = 'translateX(' + x + 'px)';
-
-        // if (this.lastDragPos !== -1) {
-        //     const w = 0.50;
-        //     velocity = w*velocity + (1-w)*(eventX - lastDragPos) / (now - lastTime);
-        // }
-
         this.lastDragPos = pos;
-        // this.lastTime = now;
+        this.estimator.update(pos, time());
     }
 }
 
