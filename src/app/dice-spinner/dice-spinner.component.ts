@@ -19,6 +19,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 
 import { TouchControl } from './touch';
 
+// The maximum spin speed in pixels per second
+// TODO - change this to viewport widths per second
+const MAX_SPEED = 7500;
+
 function time()
 {
     return (new Date()).getTime()/1000.0;
@@ -29,6 +33,11 @@ class VelocityEstimator
     velocity : number = 0;
     lastTime : number = -1;
     lastPos : number = 0;
+
+    constructor(
+        private maxSpeed : number
+    )
+    { }
 
     reset()
     {
@@ -43,6 +52,12 @@ class VelocityEstimator
         {
             const w = 0.50;
             this.velocity = w*this.velocity + (1-w)*(pos - this.lastPos) / (tm - this.lastTime);
+            if (this.maxSpeed > 0) {
+                this.velocity = Math.sign(this.velocity)*Math.min(
+                    Math.abs(this.velocity),
+                    this.maxSpeed
+                );
+            }
         }
         this.lastTime = tm;
         this.lastPos = pos;
@@ -51,7 +66,7 @@ class VelocityEstimator
 
 class Spinner
 {
-    estimator = new VelocityEstimator();
+    estimator = new VelocityEstimator(MAX_SPEED);
     startDragPos : number;
     lastDragPos : number = -1;
     trayOffset : number = 0;
