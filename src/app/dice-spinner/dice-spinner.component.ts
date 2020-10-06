@@ -19,6 +19,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 
 import { TouchControl } from './touch';
 
+// The maximum spin speed in pixels per second
+// TODO - change this to viewport widths per second
+const MAX_SPEED = 7500;
+
 function time()
 {
     return (new Date()).getTime()/1000.0;
@@ -29,6 +33,11 @@ class VelocityEstimator
     velocity : number = 0;
     lastTime : number = -1;
     lastPos : number = 0;
+
+    constructor(
+        private maxSpeed : number
+    )
+    { }
 
     reset()
     {
@@ -43,6 +52,12 @@ class VelocityEstimator
         {
             const w = 0.50;
             this.velocity = w*this.velocity + (1-w)*(pos - this.lastPos) / (tm - this.lastTime);
+            if (this.maxSpeed > 0) {
+                this.velocity = Math.sign(this.velocity)*Math.min(
+                    Math.abs(this.velocity),
+                    this.maxSpeed
+                );
+            }
         }
         this.lastTime = tm;
         this.lastPos = pos;
@@ -51,10 +66,11 @@ class VelocityEstimator
 
 class Spinner
 {
-    estimator = new VelocityEstimator();
+    estimator = new VelocityEstimator(MAX_SPEED);
     startDragPos : number;
     lastDragPos : number = -1;
     trayOffset : number = 0;
+    freeSpinning : boolean = false;
 
     constructor(
         private tray : HTMLElement
@@ -90,19 +106,22 @@ class Spinner
 
     stopDrag(pos)
     {
+        if (this.freeSpinning) {
+            return;
+        }
         this.slideTray(pos - this.lastDragPos);
-        console.log(this.estimator.velocity);
 
-        let velocity = this.estimator.velocity;
-
+        this.freeSpinning = true;
         let callback = () => {
-            const delay = 25;
-            velocity *= 0.98;
+            const dt = 25;
+            this.estimator.velocity *= 0.98;
 
-            this.slideTray(velocity*(delay/1000.0));
+            this.slideTray(this.estimator.velocity*(dt/1000.0));
 
-            if (Math.abs(velocity) > 10) {
-                setTimeout(callback, delay);
+            if (Math.abs(this.estimator.velocity) > 10) {
+                setTimeout(callback, dt);
+            } else {
+                this.freeSpinning = false;
             }
         };
         callback();
@@ -110,9 +129,11 @@ class Spinner
 
     drag(pos : number)
     {
-        // const x = this.trayOffset + pos - this.startDragPos;
-        // this.tray.style.transform = 'translateX(' + x + 'px)';
-        this.slideTray(pos - this.lastDragPos);
+        if (!this.freeSpinning) {
+            // const x = this.trayOffset + pos - this.startDragPos;
+            // this.tray.style.transform = 'translateX(' + x + 'px)';
+            this.slideTray(pos - this.lastDragPos);
+        }
 
         this.lastDragPos = pos;
         this.estimator.update(pos, time());
