@@ -55,6 +55,7 @@ class Spinner
     startDragPos : number;
     lastDragPos : number = -1;
     trayOffset : number = 0;
+    freeSpinning : boolean = false;
 
     constructor(
         private tray : HTMLElement
@@ -90,19 +91,22 @@ class Spinner
 
     stopDrag(pos)
     {
+        if (this.freeSpinning) {
+            return;
+        }
         this.slideTray(pos - this.lastDragPos);
-        console.log(this.estimator.velocity);
 
-        let velocity = this.estimator.velocity;
-
+        this.freeSpinning = true;
         let callback = () => {
-            const delay = 25;
-            velocity *= 0.98;
+            const dt = 25;
+            this.estimator.velocity *= 0.98;
 
-            this.slideTray(velocity*(delay/1000.0));
+            this.slideTray(this.estimator.velocity*(dt/1000.0));
 
-            if (Math.abs(velocity) > 10) {
-                setTimeout(callback, delay);
+            if (Math.abs(this.estimator.velocity) > 10) {
+                setTimeout(callback, dt);
+            } else {
+                this.freeSpinning = false;
             }
         };
         callback();
@@ -110,9 +114,11 @@ class Spinner
 
     drag(pos : number)
     {
-        // const x = this.trayOffset + pos - this.startDragPos;
-        // this.tray.style.transform = 'translateX(' + x + 'px)';
-        this.slideTray(pos - this.lastDragPos);
+        if (!this.freeSpinning) {
+            // const x = this.trayOffset + pos - this.startDragPos;
+            // this.tray.style.transform = 'translateX(' + x + 'px)';
+            this.slideTray(pos - this.lastDragPos);
+        }
 
         this.lastDragPos = pos;
         this.estimator.update(pos, time());
