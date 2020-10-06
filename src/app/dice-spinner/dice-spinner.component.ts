@@ -94,18 +94,19 @@ class Spinner
         this.slideTray(pos - this.lastDragPos);
         console.log(this.estimator.velocity);
 
-        // let callback = () => {
-        //     const delay = 25;
-        //     velocity *= 0.98;
-        //
-        //     slideTray(velocity*(delay/1000.0));
-        //     tray.style.transform = 'translateX(' + trayOffset + 'px)';
-        //
-        //     if (Math.abs(velocity) > 10) {
-        //         setTimeout(callback, delay);
-        //     }
-        // };
-        // callback();
+        let velocity = this.estimator.velocity;
+
+        let callback = () => {
+            const delay = 25;
+            velocity *= 0.98;
+
+            this.slideTray(velocity*(delay/1000.0));
+
+            if (Math.abs(velocity) > 10) {
+                setTimeout(callback, delay);
+            }
+        };
+        callback();
     }
 
     drag(pos : number)
