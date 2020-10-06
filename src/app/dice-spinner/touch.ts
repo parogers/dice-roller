@@ -25,6 +25,10 @@ export interface TrackedTouch
     y: number;
 }
 
+/* Implements very basic touch tracking. This class tracks a single touch
+ * gesture at a time, firing callbacks for start, end and in-between
+ * touch events. Once a touch gesture is started, all subsequent gestures
+ * will be ignored until the first gesture is stopped. */
 export class TouchControl
 {
     viewport : HTMLElement
@@ -33,6 +37,15 @@ export class TouchControl
     start : EventEmitter<any> = new EventEmitter();
     stop : EventEmitter<any> = new EventEmitter();
     move : EventEmitter<any> = new EventEmitter();
+
+    private stopActiveTouch()
+    {
+        this.stop.emit({
+            x: this.activeTouch.x,
+            y: this.activeTouch.y,
+        });
+        this.activeTouch = null;
+    }
 
     attach(viewport : HTMLElement)
     {
@@ -50,40 +63,37 @@ export class TouchControl
             {
                 this.activeTouch = {
                     identifier: touch.identifier,
-                    x: touch.pageX,
-                    y : touch.pageY,
+                    x: touch.clientX,
+                    y : touch.clientY,
                 };
                 this.start.emit({
                     x: this.activeTouch.x,
                     y: this.activeTouch.y,
                 });
-                // mouseDown(activeTouch.x, activeTouch.y);
                 break;
             }
 
         }, false);
 
-        this.viewport.addEventListener('touchend', () => {
-            if (this.activeTouch)
+        this.viewport.addEventListener('touchend', event => {
+            for (let touch of <any>event.changedTouches)
             {
-                // mouseUp(activeTouch.x, activeTouch.y);
-                this.stop.emit({
-                    x: this.activeTouch.x,
-                    y: this.activeTouch.y,
-                });
-                this.activeTouch = null;
+                if (this.activeTouch && this.activeTouch.identifier === touch.identifier)
+                {
+                    this.stopActiveTouch();
+                    break;
+                }
             }
         }, false);
 
-        this.viewport.addEventListener('touchcancel', () => {
-            if (this.activeTouch)
+        this.viewport.addEventListener('touchcancel', event => {
+            for (let touch of <any>event.changedTouches)
             {
-                // mouseUp(activeTouch.x, activeTouch.y);
-                this.stop.emit({
-                    x: this.activeTouch.x,
-                    y: this.activeTouch.y,
-                });
-                this.activeTouch = null;
+                if (this.activeTouch && this.activeTouch.identifier === touch.identifier)
+                {
+                    this.stopActiveTouch();
+                    break;
+                }
             }
         }, false);
 
@@ -92,9 +102,8 @@ export class TouchControl
             {
                 if (this.activeTouch && touch.identifier === this.activeTouch.identifier)
                 {
-                    this.activeTouch.x = touch.pageX;
-                    this.activeTouch.y = touch.pageY;
-                    // mouseMove(activeTouch.x, activeTouch.y);
+                    this.activeTouch.x = touch.clientX;
+                    this.activeTouch.y = touch.clientY;
                     this.move.emit({
                         x: this.activeTouch.x,
                         y: this.activeTouch.y,
