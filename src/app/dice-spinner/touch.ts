@@ -84,6 +84,15 @@ export class TouchControl
                     break;
                 }
             }
+            /*
+             * There seems to be a bug in firefox touch simulation, where the
+             * touchend event is fired but the changedTouches array is empty.
+             * (instead it should indicate which touch has ended as per spec)
+             */
+            if (event.changedTouches.length === 0)
+            {
+                this.stopActiveTouch();
+            }
         }, false);
 
         this.viewport.addEventListener('touchcancel', event => {
@@ -94,6 +103,11 @@ export class TouchControl
                     this.stopActiveTouch();
                     break;
                 }
+            }
+            // Added just in case - per note about firefox bug (above)
+            if (event.changedTouches.length === 0)
+            {
+                this.stopActiveTouch();
             }
         }, false);
 
