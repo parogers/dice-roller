@@ -28,7 +28,7 @@ export interface TrackedTouch
 export class TouchControl
 {
     viewport : HTMLElement
-    pendingTouch : TrackedTouch;
+    activeTouch : TrackedTouch = null;
 
     start : EventEmitter<any> = new EventEmitter();
     stop : EventEmitter<any> = new EventEmitter();
@@ -41,62 +41,63 @@ export class TouchControl
         this.viewport.addEventListener('touchstart', event => {
             event.preventDefault();
 
-            if (this.pendingTouch !== null) {
+            // We only track one touch at a time
+            if (this.activeTouch) {
                 return;
             }
 
             for (let touch of <any>event.changedTouches)
             {
-                this.pendingTouch = {
+                this.activeTouch = {
                     identifier: touch.identifier,
                     x: touch.pageX,
                     y : touch.pageY,
                 };
                 this.start.emit({
-                    x: this.pendingTouch.x,
-                    y: this.pendingTouch.y,
+                    x: this.activeTouch.x,
+                    y: this.activeTouch.y,
                 });
-                // mouseDown(pendingTouch.x, pendingTouch.y);
+                // mouseDown(activeTouch.x, activeTouch.y);
                 break;
             }
 
         }, false);
 
         this.viewport.addEventListener('touchend', () => {
-            if (this.pendingTouch !== null)
+            if (this.activeTouch)
             {
-                // mouseUp(pendingTouch.x, pendingTouch.y);
+                // mouseUp(activeTouch.x, activeTouch.y);
                 this.stop.emit({
-                    x: this.pendingTouch.x,
-                    y: this.pendingTouch.y,
+                    x: this.activeTouch.x,
+                    y: this.activeTouch.y,
                 });
-                this.pendingTouch = null;
+                this.activeTouch = null;
             }
         }, false);
 
         this.viewport.addEventListener('touchcancel', () => {
-            if (this.pendingTouch !== null)
+            if (this.activeTouch)
             {
-                // mouseUp(pendingTouch.x, pendingTouch.y);
+                // mouseUp(activeTouch.x, activeTouch.y);
                 this.stop.emit({
-                    x: this.pendingTouch.x,
-                    y: this.pendingTouch.y,
+                    x: this.activeTouch.x,
+                    y: this.activeTouch.y,
                 });
-                this.pendingTouch = null;
+                this.activeTouch = null;
             }
         }, false);
 
         this.viewport.addEventListener('touchmove', event => {
             for (let touch of <any>event.changedTouches)
             {
-                if (this.pendingTouch && touch.identifier === this.pendingTouch.identifier)
+                if (this.activeTouch && touch.identifier === this.activeTouch.identifier)
                 {
-                    this.pendingTouch.x = touch.pageX;
-                    this.pendingTouch.y = touch.pageY;
-                    // mouseMove(pendingTouch.x, pendingTouch.y);
-                    this.stop.emit({
-                        x: this.pendingTouch.x,
-                        y: this.pendingTouch.y,
+                    this.activeTouch.x = touch.pageX;
+                    this.activeTouch.y = touch.pageY;
+                    // mouseMove(activeTouch.x, activeTouch.y);
+                    this.move.emit({
+                        x: this.activeTouch.x,
+                        y: this.activeTouch.y,
                     });
                     break;
                 }

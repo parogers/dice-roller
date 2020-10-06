@@ -139,6 +139,15 @@ export class DiceSpinnerComponent implements OnInit
     constructor()
     {
         this.touchCtrl = new TouchControl();
+        this.touchCtrl.start.subscribe(event => {
+            this.spinner.startDrag(event.x);
+        });
+        this.touchCtrl.stop.subscribe(event =>{
+            this.spinner.stopDrag(event.x);
+        });
+        this.touchCtrl.move.subscribe(event => {
+            this.spinner.drag(event.x);
+        });
     }
 
     get tray() : HTMLElement
