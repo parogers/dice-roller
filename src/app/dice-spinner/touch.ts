@@ -68,7 +68,7 @@ export class TouchControl
                 // mouseUp(pendingTouch.x, pendingTouch.y);
                 this.stop.emit({
                     x: this.pendingTouch.x,
-                    y: this.pendingTouch,y,
+                    y: this.pendingTouch.y,
                 });
                 this.pendingTouch = null;
             }
@@ -80,7 +80,7 @@ export class TouchControl
                 // mouseUp(pendingTouch.x, pendingTouch.y);
                 this.stop.emit({
                     x: this.pendingTouch.x,
-                    y: this.pendingTouch,y,
+                    y: this.pendingTouch.y,
                 });
                 this.pendingTouch = null;
             }
@@ -94,9 +94,9 @@ export class TouchControl
                     this.pendingTouch.x = touch.pageX;
                     this.pendingTouch.y = touch.pageY;
                     // mouseMove(pendingTouch.x, pendingTouch.y);
-                    this.stop.move({
+                    this.stop.emit({
                         x: this.pendingTouch.x,
-                        y: this.pendingTouch,y,
+                        y: this.pendingTouch.y,
                     });
                     break;
                 }
