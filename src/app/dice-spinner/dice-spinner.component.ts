@@ -17,6 +17,8 @@
  */
 import { Component, OnInit, ViewChild } from '@angular/core';
 
+import { TouchControl } from './touch';
+
 function time()
 {
     return (new Date()).getTime()/1000.0;
@@ -53,8 +55,6 @@ class Spinner
     startDragPos : number;
     lastDragPos : number = -1;
     trayOffset : number = 0;
-    // lastTime : number;
-    // velocity : number;
 
     constructor(
         private tray : HTMLElement
@@ -85,7 +85,6 @@ class Spinner
     {
         this.startDragPos = pos;
         this.lastDragPos = pos;
-        this.velocity = 0;
         this.estimator.reset();
     }
 
@@ -135,16 +134,27 @@ export class DiceSpinnerComponent implements OnInit
 
     spinner : Spinner;
 
-    constructor() { }
+    touchCtrl : TouchControl;
+
+    constructor()
+    {
+        this.touchCtrl = new TouchControl();
+    }
 
     get tray() : HTMLElement
     {
         return this.trayView.nativeElement;
     }
 
+    get viewport() : HTMLElement
+    {
+        return this.viewportView.nativeElement;
+    }
+
     ngOnInit(): void
     {
         this.spinner = new Spinner(this.tray);
+        this.touchCtrl.attach(this.viewportView.nativeElement);
     }
 
     handleMouseMove(event)
