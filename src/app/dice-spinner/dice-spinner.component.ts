@@ -61,10 +61,10 @@ class Spinner
     )
     { }
 
-    setTrayX(value : number)
+    slideTray(delta : number)
     {
         const rect = this.tray.getBoundingClientRect();
-        this.trayOffset = value;
+        this.trayOffset += delta;
 
         if (-this.trayOffset > rect.width)
         {
@@ -75,26 +75,30 @@ class Spinner
             this.tray.removeChild(tile);
             this.tray.appendChild(tile);
         }
+        else
+        {
+            this.tray.style.transform = 'translateX(' + this.trayOffset + 'px)';
+        }
     }
 
     startDrag(pos)
     {
         this.startDragPos = pos;
-        this.lastDragPos = -1;
+        this.lastDragPos = pos;
         this.velocity = 0;
         this.estimator.reset();
     }
 
     stopDrag(pos)
     {
-        this.setTrayX(this.trayOffset + pos - this.startDragPos);
+        this.slideTray(pos - this.lastDragPos);
         console.log(this.estimator.velocity);
-        //
+
         // let callback = () => {
         //     const delay = 25;
         //     velocity *= 0.98;
         //
-        //     setTrayX(trayOffset + velocity*(delay/1000.0));
+        //     slideTray(velocity*(delay/1000.0));
         //     tray.style.transform = 'translateX(' + trayOffset + 'px)';
         //
         //     if (Math.abs(velocity) > 10) {
@@ -106,8 +110,10 @@ class Spinner
 
     drag(pos : number)
     {
-        const x = this.trayOffset + pos - this.startDragPos;
-        this.tray.style.transform = 'translateX(' + x + 'px)';
+        // const x = this.trayOffset + pos - this.startDragPos;
+        // this.tray.style.transform = 'translateX(' + x + 'px)';
+        this.slideTray(pos - this.lastDragPos);
+
         this.lastDragPos = pos;
         this.estimator.update(pos, time());
     }
