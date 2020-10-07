@@ -71,6 +71,7 @@ class Spinner
     lastDragPos : number = -1;
     trayOffset : number = 0;
     freeSpinning : boolean = false;
+    magnet : boolean = false;
 
     constructor(
         private tray : HTMLElement
@@ -124,21 +125,7 @@ class Spinner
             return;
         }
         this.slideTray(pos - this.lastDragPos);
-
-        this.freeSpinning = true;
-        let callback = () => {
-            const dt = 25;
-            this.estimator.velocity *= 0.98;
-
-            this.slideTray(this.estimator.velocity*(dt/1000.0));
-
-            if (Math.abs(this.estimator.velocity) > 10) {
-                setTimeout(callback, dt);
-            } else {
-                this.freeSpinning = false;
-            }
-        };
-        callback();
+        this.engageFreeSpin();
     }
 
     drag(pos : number)
@@ -151,6 +138,74 @@ class Spinner
 
         this.lastDragPos = pos;
         this.estimator.update(pos, time());
+    }
+
+    engageFreeSpin()
+    {
+        if (this.freeSpinning) {
+            return;
+        }
+        const rect = this.tray.getBoundingClientRect();
+
+        this.magnet = false;
+        this.freeSpinning = true;
+        let callback = () => {
+            const dt = 25;
+            const magnetMaxSpeed = 500;
+
+            if (this.magnet) {
+                // Spinner is being "magnetically" drawn to a natural
+                // stopping point.
+                // this.freeSpinning = false;
+                // this.magnet = false;
+
+                let accel = 0;
+                if (Math.abs(this.trayOffset) > rect.width/2) {
+                    accel = -500;
+                } else {
+                    accel = 500;
+                }
+
+                if (Math.sign(accel) != Math.sign(this.estimator.velocity)) {
+                    accel *= 3;
+                }
+
+                this.estimator.velocity += accel*(dt/1000);
+                this.estimator.velocity = Math.sign(this.estimator.velocity)*Math.min(
+                    Math.abs(this.estimator.velocity),
+                    magnetMaxSpeed
+                );
+                this.slideTray(this.estimator.velocity*(dt/1000.0));
+
+                if (Math.abs(this.estimator.velocity) < 10 &&
+                    (Math.abs(this.trayOffset) < 10 ||
+                     Math.abs(this.trayOffset) > rect.width-10))
+                {
+                    console.log('magnet done');
+                    this.freeSpinning = false;
+                }
+                else {
+                    setTimeout(callback, dt);
+                }
+
+            } else {
+                // Spinning freely but slowing down gradually
+                this.slideTray(this.estimator.velocity*(dt/1000.0));
+
+                if (Math.abs(this.estimator.velocity) > magnetMaxSpeed)
+                {
+                    this.estimator.velocity *= 0.98;
+                }
+                else
+                {
+                    // Enagage "magnet mode"
+                    this.magnet = true;
+                    console.log('engage magnet');
+                }
+                setTimeout(callback, dt);
+            }
+        };
+        callback();
     }
 }
 
