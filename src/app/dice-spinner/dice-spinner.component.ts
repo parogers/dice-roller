@@ -82,14 +82,28 @@ class Spinner
         const rect = this.tray.getBoundingClientRect();
         this.trayOffset += delta;
 
-        if (-this.trayOffset > rect.width)
+        if (this.trayOffset < 0 && Math.abs(this.trayOffset) > rect.width)
         {
+            // The second tile of the tray is now visible. So move the first
+            // tile onto the end and shift the tray (offset) accordingly.
             this.trayOffset += rect.width;
             this.tray.style.transform = 'translateX(' + this.trayOffset + 'px)';
 
-            const tile = this.tray.querySelector('div');
+            const tile = this.tray.querySelector('div.tile');
             this.tray.removeChild(tile);
             this.tray.appendChild(tile);
+        }
+        else if (this.trayOffset >= 0)
+        {
+            // The space before the first tile is now visible. So move the last
+            // tile of the tray to the beginning, and shift the tray (offset)
+            // accordingly.
+            this.trayOffset -= rect.width;
+            this.tray.style.transform = 'translateX(' + this.trayOffset + 'px)';
+
+            const first = this.tray.querySelector('div.tile');
+            const tile = this.tray.querySelector('div.tile:last-child');
+            this.tray.insertBefore(tile, first);
         }
         else
         {
