@@ -21,11 +21,20 @@ import { TouchControl } from './touch';
 
 // The maximum spin speed in pixels per second
 // TODO - change this to viewport widths per second
-const MAX_SPEED = 7500;
+const MAX_SPEED = 500;
 
 function time()
 {
     return (new Date()).getTime()/1000.0;
+}
+
+/* Return the given velocity clamped to a maximum speed */
+function clampVelocity(velocity : number, maxSpeed : number)
+{
+    return Math.sign(velocity) * Math.min(
+        Math.abs(velocity),
+        maxSpeed,
+    );
 }
 
 class VelocityEstimator
@@ -52,11 +61,9 @@ class VelocityEstimator
         {
             const w = 0.50;
             this.velocity = w*this.velocity + (1-w)*(pos - this.lastPos) / (tm - this.lastTime);
-            if (this.maxSpeed > 0) {
-                this.velocity = Math.sign(this.velocity)*Math.min(
-                    Math.abs(this.velocity),
-                    this.maxSpeed
-                );
+            if (this.maxSpeed > 0)
+            {
+                this.velocity = clampVelocity(this.velocity, this.maxSpeed);
             }
         }
         this.lastTime = tm;
@@ -171,10 +178,7 @@ class Spinner
                 }
 
                 this.estimator.velocity += accel*(dt/1000);
-                this.estimator.velocity = Math.sign(this.estimator.velocity)*Math.min(
-                    Math.abs(this.estimator.velocity),
-                    magnetMaxSpeed
-                );
+                this.estimator.velocity = clampVelocity(this.estimator.velocity, magnetMaxSpeed);
 
                 if (Math.abs(this.estimator.velocity) < 10 &&
                     Math.abs(nearestPos - this.trayOffset) < 10)
