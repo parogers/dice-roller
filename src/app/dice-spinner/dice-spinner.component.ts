@@ -176,7 +176,7 @@ class Spinner
 
                 // Spinner is being "magnetically" drawn to a natural
                 // stopping point.
-                let accel = Math.sign(nearestPos - this.trayOffset) * 500;
+                let accel = Math.sign(nearestPos - this.trayOffset) * 1000;
 
                 // Slow down the tray quickly if it's heading in the wrong
                 // direction. This has the effect of damping the speed as it
@@ -188,7 +188,7 @@ class Spinner
                 this.estimator.velocity += accel*(dt/1000);
                 this.estimator.velocity = clampVelocity(this.estimator.velocity, magnetMaxSpeed);
 
-                if (Math.abs(this.estimator.velocity) < 10 &&
+                if (Math.abs(this.estimator.velocity) < 50 &&
                     Math.abs(nearestPos - this.trayOffset) < 10)
                 {
                     this.slideTrayTo(nearestPos);
