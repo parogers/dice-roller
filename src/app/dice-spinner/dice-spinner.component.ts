@@ -78,6 +78,11 @@ class Spinner
     )
     { }
 
+    slideTrayTo(pos : number)
+    {
+        this.slideTray(pos - this.trayOffset);
+    }
+
     slideTray(delta : number)
     {
         const rect = this.tray.getBoundingClientRect();
@@ -177,11 +182,14 @@ class Spinner
                 );
                 this.slideTray(this.estimator.velocity*(dt/1000.0));
 
+                // Calculate the closest tile edge to our current offset
+                const nearestPos = rect.width*Math.round(this.trayOffset/rect.width);
+
                 if (Math.abs(this.estimator.velocity) < 10 &&
-                    (Math.abs(this.trayOffset) < 10 ||
-                     Math.abs(this.trayOffset) > rect.width-10))
+                    Math.abs(nearestPos - this.trayOffset) < 10)
                 {
                     console.log('magnet done');
+                    this.slideTrayTo(nearestPos);
                     this.freeSpinning = false;
                 }
                 else {
