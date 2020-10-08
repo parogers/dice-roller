@@ -159,17 +159,12 @@ class Spinner
             const magnetMaxSpeed = 500;
 
             if (this.magnet) {
+                // Calculate the closest tile edge to our current offset
+                const nearestPos = rect.width*Math.round(this.trayOffset/rect.width);
+
                 // Spinner is being "magnetically" drawn to a natural
                 // stopping point.
-                // this.freeSpinning = false;
-                // this.magnet = false;
-
-                let accel = 0;
-                if (Math.abs(this.trayOffset) > rect.width/2) {
-                    accel = -500;
-                } else {
-                    accel = 500;
-                }
+                let accel = Math.sign(nearestPos - this.trayOffset) * 500;
 
                 if (Math.sign(accel) != Math.sign(this.estimator.velocity)) {
                     accel *= 3;
@@ -180,10 +175,6 @@ class Spinner
                     Math.abs(this.estimator.velocity),
                     magnetMaxSpeed
                 );
-                this.slideTray(this.estimator.velocity*(dt/1000.0));
-
-                // Calculate the closest tile edge to our current offset
-                const nearestPos = rect.width*Math.round(this.trayOffset/rect.width);
 
                 if (Math.abs(this.estimator.velocity) < 10 &&
                     Math.abs(nearestPos - this.trayOffset) < 10)
@@ -193,6 +184,7 @@ class Spinner
                     this.freeSpinning = false;
                 }
                 else {
+                    this.slideTray(this.estimator.velocity*(dt/1000.0));
                     setTimeout(callback, dt);
                 }
 
