@@ -128,7 +128,8 @@ class Spinner
     {
         this.startDragPos = pos;
         this.lastDragPos = pos;
-        this.estimator.reset();
+        this.magnet = false;
+        this.freeSpinning = false;
     }
 
     stopDrag(pos)
@@ -162,6 +163,11 @@ class Spinner
         let callback = () => {
             const dt = 25;
             const magnetMaxSpeed = 500;
+
+            if (!this.freeSpinning) {
+                // User started dragging again
+                return;
+            }
 
             if (this.magnet)
             {
