@@ -28,6 +28,15 @@ function time()
     return (new Date()).getTime()/1000.0;
 }
 
+/* Return the given velocity clamped to a maximum speed */
+function clampVelocity(velocity : number, maxSpeed : number)
+{
+    return Math.sign(velocity) * Math.min(
+        Math.abs(velocity),
+        maxSpeed,
+    );
+}
+
 class VelocityEstimator
 {
     velocity : number = 0;
@@ -52,11 +61,9 @@ class VelocityEstimator
         {
             const w = 0.50;
             this.velocity = w*this.velocity + (1-w)*(pos - this.lastPos) / (tm - this.lastTime);
-            if (this.maxSpeed > 0) {
-                this.velocity = Math.sign(this.velocity)*Math.min(
-                    Math.abs(this.velocity),
-                    this.maxSpeed
-                );
+            if (this.maxSpeed > 0)
+            {
+                this.velocity = clampVelocity(this.velocity, this.maxSpeed);
             }
         }
         this.lastTime = tm;
@@ -71,11 +78,17 @@ class Spinner
     lastDragPos : number = -1;
     trayOffset : number = 0;
     freeSpinning : boolean = false;
+    magnet : boolean = false;
 
     constructor(
         private tray : HTMLElement
     )
     { }
+
+    slideTrayTo(pos : number)
+    {
+        this.slideTray(pos - this.trayOffset);
+    }
 
     slideTray(delta : number)
     {
@@ -115,7 +128,8 @@ class Spinner
     {
         this.startDragPos = pos;
         this.lastDragPos = pos;
-        this.estimator.reset();
+        this.magnet = false;
+        this.freeSpinning = false;
     }
 
     stopDrag(pos)
@@ -124,33 +138,85 @@ class Spinner
             return;
         }
         this.slideTray(pos - this.lastDragPos);
-
-        this.freeSpinning = true;
-        let callback = () => {
-            const dt = 25;
-            this.estimator.velocity *= 0.98;
-
-            this.slideTray(this.estimator.velocity*(dt/1000.0));
-
-            if (Math.abs(this.estimator.velocity) > 10) {
-                setTimeout(callback, dt);
-            } else {
-                this.freeSpinning = false;
-            }
-        };
-        callback();
+        this.engageFreeSpin();
     }
 
     drag(pos : number)
     {
         if (!this.freeSpinning) {
-            // const x = this.trayOffset + pos - this.startDragPos;
-            // this.tray.style.transform = 'translateX(' + x + 'px)';
             this.slideTray(pos - this.lastDragPos);
         }
 
         this.lastDragPos = pos;
         this.estimator.update(pos, time());
+    }
+
+    engageFreeSpin()
+    {
+        if (this.freeSpinning) {
+            return;
+        }
+        const rect = this.tray.getBoundingClientRect();
+
+        this.magnet = false;
+        this.freeSpinning = true;
+        let callback = () => {
+            const dt = 25;
+            const magnetMaxSpeed = 500;
+
+            if (!this.freeSpinning) {
+                // User started dragging again
+                return;
+            }
+
+            if (this.magnet)
+            {
+                // Calculate the closest tile edge to our current offset
+                const nearestPos = rect.width*Math.round(this.trayOffset/rect.width);
+
+                // Spinner is being "magnetically" drawn to a natural
+                // stopping point.
+                let accel = Math.sign(nearestPos - this.trayOffset) * 1000;
+
+                // Slow down the tray quickly if it's heading in the wrong
+                // direction. This has the effect of damping the speed as it
+                // oscillates about it's final rest position.
+                if (Math.sign(accel) != Math.sign(this.estimator.velocity)) {
+                    accel *= 3;
+                }
+
+                this.estimator.velocity += accel*(dt/1000);
+                this.estimator.velocity = clampVelocity(this.estimator.velocity, magnetMaxSpeed);
+
+                if (Math.abs(this.estimator.velocity) < 50 &&
+                    Math.abs(nearestPos - this.trayOffset) < 10)
+                {
+                    this.slideTrayTo(nearestPos);
+                    this.freeSpinning = false;
+                }
+                else {
+                    this.slideTray(this.estimator.velocity*(dt/1000.0));
+                    setTimeout(callback, dt);
+                }
+            }
+            else
+            {
+                // Spinning freely but slowing down gradually
+                this.slideTray(this.estimator.velocity*(dt/1000.0));
+
+                if (Math.abs(this.estimator.velocity) > magnetMaxSpeed)
+                {
+                    this.estimator.velocity *= 0.98;
+                }
+                else
+                {
+                    // Enagage "magnet mode"
+                    this.magnet = true;
+                }
+                setTimeout(callback, dt);
+            }
+        };
+        callback();
     }
 }
 
