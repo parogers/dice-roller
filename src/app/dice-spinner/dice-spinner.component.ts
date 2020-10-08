@@ -21,7 +21,7 @@ import { TouchControl } from './touch';
 
 // The maximum spin speed in pixels per second
 // TODO - change this to viewport widths per second
-const MAX_SPEED = 500;
+const MAX_SPEED = 7500;
 
 function time()
 {
@@ -143,8 +143,6 @@ class Spinner
     drag(pos : number)
     {
         if (!this.freeSpinning) {
-            // const x = this.trayOffset + pos - this.startDragPos;
-            // this.tray.style.transform = 'translateX(' + x + 'px)';
             this.slideTray(pos - this.lastDragPos);
         }
 
@@ -165,7 +163,8 @@ class Spinner
             const dt = 25;
             const magnetMaxSpeed = 500;
 
-            if (this.magnet) {
+            if (this.magnet)
+            {
                 // Calculate the closest tile edge to our current offset
                 const nearestPos = rect.width*Math.round(this.trayOffset/rect.width);
 
@@ -173,6 +172,9 @@ class Spinner
                 // stopping point.
                 let accel = Math.sign(nearestPos - this.trayOffset) * 500;
 
+                // Slow down the tray quickly if it's heading in the wrong
+                // direction. This has the effect of damping the speed as it
+                // oscillates about it's final rest position.
                 if (Math.sign(accel) != Math.sign(this.estimator.velocity)) {
                     accel *= 3;
                 }
@@ -183,7 +185,6 @@ class Spinner
                 if (Math.abs(this.estimator.velocity) < 10 &&
                     Math.abs(nearestPos - this.trayOffset) < 10)
                 {
-                    console.log('magnet done');
                     this.slideTrayTo(nearestPos);
                     this.freeSpinning = false;
                 }
@@ -191,8 +192,9 @@ class Spinner
                     this.slideTray(this.estimator.velocity*(dt/1000.0));
                     setTimeout(callback, dt);
                 }
-
-            } else {
+            }
+            else
+            {
                 // Spinning freely but slowing down gradually
                 this.slideTray(this.estimator.velocity*(dt/1000.0));
 
@@ -204,7 +206,6 @@ class Spinner
                 {
                     // Enagage "magnet mode"
                     this.magnet = true;
-                    console.log('engage magnet');
                 }
                 setTimeout(callback, dt);
             }
