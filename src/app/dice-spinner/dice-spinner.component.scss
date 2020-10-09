@@ -34,6 +34,17 @@
     outline: solid 1px lightgray;
 
     user-select: none;
+
+    &.odd {
+        background: black;
+        color: white;
+        border-right: solid 1px black;
+    }
+
+    &.even {
+        background: white;
+        color: black;
+    }
 }
 
 .tile > div
@@ -44,8 +55,8 @@
     align-items: center;
     height: 100%;
 
-    border-left: solid 1px lightgray;
-    border-right: solid 1px lightgray;
+    // border-left: solid 2px black;
+    // border-right: solid 2px black;
 }
 
 .tray
@@ -64,7 +75,8 @@
     margin-left: auto;
     margin-right: auto;
 
-    border: solid 1px black;
     box-sizing: border-box;
     border-radius: 2em;
+
+    box-shadow: 0 2px 5px black;
 }
