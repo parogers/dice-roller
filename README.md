@@ -12,6 +12,8 @@ This app is more of a tech demo than something particularly useful. (though it's
 
 The looping was done by some basic DOM manipulation. Elements are removed when out of frame, and then tacked onto the opposite end so they eventually come back into view.
 
+Initially I considered using a canvas to render each spinner. In some ways that would have been easier, though sticking to HTML elements means things are easier to style with CSS. As well, this code could easily be refactored into a reusable UI element, with each tile showing a different page of content, image, form control etc. (eg similar in use to ion-slide)
+
 ## Screenshots
 
 ![Screenshot](docs/screenshots/shot1.png)
