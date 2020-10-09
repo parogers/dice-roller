@@ -58,10 +58,6 @@ class VelocityEstimator
         {
             const w = 0.50;
             this.velocity = w*this.velocity + (1-w)*(pos - this.lastPos) / (tm - this.lastTime);
-            if (this.maxSpeed > 0)
-            {
-                this.velocity = clampVelocity(this.velocity, this.maxSpeed);
-            }
         }
         this.lastTime = tm;
         this.lastPos = pos;
@@ -198,10 +194,12 @@ export class Spinner
             }
             else
             {
-                // Spinning freely but slowing down gradually
-                this.slideTray(this.estimator.velocity*(dt/1000.0));
+                const vel = clampVelocity(this.estimator.velocity, MAX_SPEED);
 
-                if (Math.abs(this.estimator.velocity) > magnetMaxSpeed)
+                // Spinning freely but slowing down gradually
+                this.slideTray(vel*(dt/1000.0));
+
+                if (Math.abs(vel) > magnetMaxSpeed)
                 {
                     this.estimator.velocity *= 0.98;
                 }
