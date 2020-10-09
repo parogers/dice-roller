@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 
 import { TouchControl } from './touch';
 
@@ -38,6 +38,9 @@ export class DiceSpinnerComponent implements OnInit
     spinner : Spinner;
 
     touchCtrl : TouchControl;
+
+    @Input()
+    faces : string[] = ['1', '2', '3', '4', '5', '6'];
 
     constructor()
     {
@@ -68,11 +71,11 @@ export class DiceSpinnerComponent implements OnInit
         this.spinner = new Spinner(this.tray);
         this.touchCtrl.attach(this.viewportView.nativeElement);
 
-        const tiles = this.tray.querySelectorAll('.tile');
-        tiles.forEach((tile, index) => {
-            if (index % 2 == 0) tile.classList.add('even');
-            else tile.classList.add('odd');
-        });
+        // const tiles = this.tray.querySelectorAll('.tile');
+        // tiles.forEach((tile, index) => {
+        //     if (index % 2 == 0) tile.classList.add('even');
+        //     else tile.classList.add('odd');
+        // });
     }
 
     handleMouseMove(event)
