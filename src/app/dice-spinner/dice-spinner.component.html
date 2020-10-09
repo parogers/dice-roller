@@ -7,28 +7,15 @@
     >
 
     <div #tray class="tray">
-        <div class="tile">
-            <div>1</div>
-        </div>
-
-        <div class="tile">
-            <div>2</div>
-        </div>
-
-        <div class="tile">
-            <div>3</div>
-        </div>
-
-        <div class="tile">
-            <div>4</div>
-        </div>
-
-        <div class="tile">
-            <div>5</div>
-        </div>
-
-        <div class="tile">
-            <div>6</div>
+        <div
+            class="tile"
+            *ngFor="let face of faces; index as index"
+            [class.even]="index % 2 == 0"
+            [class.odd]="index % 2 == 1"
+        >
+            <div>
+                {{ face }}
+            </div>
         </div>
     </div>
 
