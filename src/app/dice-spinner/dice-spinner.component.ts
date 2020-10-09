@@ -265,6 +265,12 @@ export class DiceSpinnerComponent implements OnInit
     {
         this.spinner = new Spinner(this.tray);
         this.touchCtrl.attach(this.viewportView.nativeElement);
+
+        const tiles = this.tray.querySelectorAll('.tile');
+        tiles.forEach((tile, index) => {
+            if (index % 2 == 0) tile.classList.add('even');
+            else tile.classList.add('odd');
+        });
     }
 
     handleMouseMove(event)
